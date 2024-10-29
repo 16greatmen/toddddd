@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Materi Kelas Interaktif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+        }
+
+        nav {
+            background-color: #1a73e8;
+            padding: 1rem;
+            color: white;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: white;
+            color: #1a73e8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 6rem auto 2rem;
+            padding: 0 1rem;
+        }
+
+        .search-container {
+            margin: 2rem 0;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            border-color: #1a73e8;
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .subject-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .subject-card h2 {
+            color: #1a73e8;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .subject-card ul {
+            list-style-position: inside;
+            color: #444;
+            display: none;
+        }
+
+        .subject-card.active ul {
+            display: block;
+        }
+
+        .subject-card li {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .subject-card li:hover {
+            background-color: #f0f2f5;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .welcome-section h2 {
+            color: #1a73e8;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-section p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background: #1a73e8;
+            color: white;
+            margin-top: 3rem;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+
+        body.dark-theme .subject-card {
+            background: #2d2d2d;
+            color: #fff;
+        }
+
+        body.dark-theme .welcome-section {
+            background: #2d2d2d;
+        }
+
+        body.dark-theme .welcome-section p {
+            color: #ddd;
+        }
+
+        body.dark-theme .subject-card li:hover {
+            background-color: #3d3d3d;
+        }
+
+        /* Animation for cards */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .subject-card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: #1a73e8;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-content">
+            <h1> Materi Kelas X-8</h1>
+            <button class="theme-toggle">Ubah Tema</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="welcome-section">
+            <h2>Selamat Datang di Portal Materi Kelas X-8</h2>
+            <p>Klik pada mata pelajaran untuk melihat detail materi. Gunakan fitur pencarian untuk menemukan materi spesifik.</p>
+        </section>
+
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Cari materi...">
+        </div>
+
+        <div class="subject-grid">
+            <!-- Cards will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; Materi di kelas X-8.</p>
+    </footer>
+
+    <script>
+        // Data mata pelajaran
+        const subjects = [
+            { 
+                name: "Bahasa Jawa",
+                topics: ["Tanggap Sasmita tumrap Lestarine Alam", "Wayang minangka Sarana Panggulawenthah", "Pitutur Luhur Sajroning Pagelaran"],
+                progress: 66
+            },
+            {
+                name: "PAI",
+                topics: ["", "", "", "", ""],
+                progress: 40
+            },
+            {
+                name: "PKWU",
+                topics: ["Budidaya", "Kerajinan", "Pengolahan", "Rekayasa"],
+                progress: 70
+            },
+            {
+                name: "PJOK",
+                topics: ["Permainan Bola Basket", "Permainan Sepak Bola", "Permainan Bola Tangan", "Permainan Bola Voli"],
+                progress: 50
+            },
+            {
+                name: "Ekonomi",
+                topics: ["Pengantar Ilmu Ekonomi", "Kegiatan Ekonomi", "Pasar dan Terbentuknya Harga Pasar", "Uang, Lembaga Keuangan, Pasar Modal, dan OJK"],
+                progress: 45
+            },
+            {
+                name: "Pendidikan Pancasila",
+                topics: ["Pancasila", "Undang-Undang Dasar Negara Republik Indonesia Tahun 1945"],
+                progress: 44
+            },
+            {
+                name: "Biologi",
+                topics: ["Mengenal Virus dan Peranannya bagi Manusia", "Keanekaragaman Hayati", "Ekosistem", "Dampak Aktivitas Manusia terhadap Pencemaran Lingkungan dan Pemanasana Global", "Inovasi Teknologi dalam Biologi"],
+                progress: 40
+            },
+            {
+                name: "Sosiologi",
+                topics: ["Kelahiran dan Kajian Sosiologi", "Penlitian Sosial", "Identitas Sosial, Tindakan Sosial, Hubungan Sosial", "Lembaga Sosial", "Ragam Gejala Sosial dalam Masyarakat Multikultural"],
+                progress: 66
+            },
+            {
+                name: "Kimia",
+                topics: ["Kimia dalam Kehidupan dan Pemanasan Global", "Struktur Atom dan Sistem Periodik Unsur", "Hukum Dasar Kimia"],
+                progress: 45
+            },
+            {
+                name: "Informatika",
+                topics: ["Informatika dan Keterampilan Generik", "Berpikir Komputasional", "Teknologi Informasi dan Komunikasi", "Sistem Komputer", "Jaringan Komputer dan Internet", "Analisi Data", "Algoritma dan Pemrograman", "Dampak Sosial Informatika", "Praktika Lintas Bidang Informatika"],
+                progress: 40
+            },
+            {
+                name: "Matematika",
+                topics: ["Eksponen dan Logaritma", "Barisan dan Deret", "Vektor", "Trigonometri"],
+                progress: 75
+            },
+            {
+                name: "Bahasa Indonesia",
+                topics: ["Menyusun Laporan Hasil Observasi", "Mengungkapkan Kritik Lewat Senyuman", "Menyampaikan Ide Melalui Anekdot", "Melestarikan Nilai Kearifan Lokal Melalui Cerita Rakyat","Membuat Kesepakatan Melalui Negoisasi", "Berdebat dengan Indah"],
+                progress: 43
+            },
+            {
+                name: "Fisika",
+                topics: ["Pengukuran dan Besaran Fisika", "Pencemaran Lingkungan dan Energi Alternatif", "Pemanasan Global dan Perubahan Iklim"],
+                progress: 43
+            },
+            {
+                name: "Sejarah",
+                topics: ["Konsep Dasar Ilmu Sejarah", "Kehidupan Bangsa Indonesia dan Jalur Rempah pada Masa Praaksara", "Kehidupn Bangsa Indonesia dan Jalur Rempah pada Masa Hindu-Buddha", "Kehidupan Bangsa Indonesia dan Jalur Rempah pada Masa Islam"],
+                progress: 47
+            },
+            {
+                name: "Bahasa Inggris",
+                topics: ["Grammar", "Speaking", "Writing", "Reading Comprehension", "Listening"],
+                progress: 65
+            },
+            {
+                name: "Geografi",
+                topics: ["Pengetahuan Dasar Georgrafi", "Pengetahuan Dasar Pemetaan , Pengindraan Jauh, dan Sistem Informasi Geografis", "Penelitian Geografis", "Lingkungan Geosfer:Litosfer", "Lingkungan Geosfer:Atmosfer", "Lingkungan Geosfer:Hidrosfer" ],
+                progress: 41
+            }
+                 
+        ];
+
+        // Fungsi untuk membuat kartu mata pelajaran
+        function createSubjectCards() {
+            const grid = document.querySelector('.subject-grid');
+            grid.innerHTML = '';
+            
+            subjects.forEach((subject, index) => {
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                card.setAttribute('data-index', index);
+
+                const content = `
+                    <h2>${subject.name} <span>▼</span></h2>
+                    <ul>
+                        ${subject.topics.map(topic => `<li>${topic}</li>`).join('')}
+                    </ul>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: ${subject.progress}%"></div>
+                    </div>
+                `;
+
+                card.innerHTML = content;
+                grid.appendChild(card);
+
+                // Menambahkan delay untuk animasi
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                }, index * 100);
+            });
+        }
+
+        // Fungsi pencarian
+        function searchSubjects(query) {
+            const cards = document.querySelectorAll('.subject-card');
+            cards.forEach(card => {
+                const subject = subjects[card.getAttribute('data-index')];
+                const matchesQuery = subject.name.toLowerCase().includes(query.toLowerCase()) ||
+                                   subject.topics.some(topic => topic.toLowerCase().includes(query.toLowerCase()));
+                card.style.display = matchesQuery ? 'block' : 'none';
+            });
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            createSubjectCards();
+
+            // Toggle tema gelap/terang
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-theme');
+                themeToggle.textContent = document.body.classList.contains('dark-theme') ? 
+                    'Tema Terang' : 'Tema Gelap';
+            });
+
+            // Pencarian
+            const searchBox = document.querySelector('.search-box');
+            searchBox.addEventListener('input', (e) => {
+                searchSubjects(e.target.value);
+            });
+
+            // Toggle kartu
+            document.querySelector('.subject-grid').addEventListener('click', (e) => {
+                const card = e.target.closest('.subject-card');
+                if (card) {
+                    card.classList.toggle('active');
+                    const arrow = card.querySelector('h2 span');
+                    arrow.textContent = card.classList.contains('active') ? '▲' : '▼';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

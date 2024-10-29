@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Pelajaran</title>
+    <style>
+        :root {
+            --primary-color: #2196f3;
+            --secondary-color: #1976d2;
+            --backgound-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --hover-color: #f5f5f5;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #64b5f6;
+            --secondary-color: #42a5f5;
+            --backgound-color: #1a1a1a;
+            --text-color: #ffffff;
+            --border-color: #404040;
+            --hover-color: #2d2d2d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'segoe UI', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--backgound-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary-color);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2em;
+            margin: 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        select {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px var(--border-color);
+            background: var(--backgound-color);
+            color: var(--text-color);
+            font-size: 1em;
+            cursor: pointer;
+            outline: none
+        }
+
+        select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .schedule-container {
+            background: var(--backgound-color);
+            border: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to {opacity: 1; transform: translateY(0); }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background: var(--hover-color);
+        }
+
+        .subject-cell {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .subject-cell:hover {
+            transform: scale(1.02);
+            z-index: 1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .time-cell {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .break-cell {
+            background: var(--secondary-color) !important;
+            color: white;
+            font-weight: bold;
+        }
+
+        .current-time {
+            background: rgb(76, 175, 80, 0.2) !important;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s ease;
+            width: max-content;
+            z-index: 2;
+        }
+
+        .subject-cell:hover ,.tooltip {
+            visibility: visible;
+            opacity: 1;
+            bottom: calc(100% + 10px);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
+            
+            th, td {
+                padding: 10px 5px;
+                font-size: 0.9em;
+            }
+
+            .tooltip {
+                display: none;
+            }
+        }
+
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .loading div {
+            width: 10px;
+            height: 10px;
+            margin: 0 5px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: bounce 0.5s ease infinite;
+        }
+
+        .loading div:nth-child(2) { animation-delay: 0.1s; }
+        .loading div:nth-child(3) { animation-delay: 0.2s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Jadwal Pelajaran</h1>
+            <div class="controls">
+                <h2>Kelas X-8</h2>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 Ganti Tema</button>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <select id="semesterSelect">
+            <option value="1">Semester 1</option>
+        </select>
+        <select id="filterSelect">
+            <option value="senin">All</option>
+            
+        </select>
+    </div>
+
+    <div class="loading">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+
+    <div class="schedule-container">
+        <table>
+            <thead>
+                <tr>
+                    
+                    <th>Senin</th>
+                    <th>Selasa</th>
+                    <th>Rabu</th>
+                    <th>Kamis</th>
+                    <th>Jumat</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="subject-cell">Upacara
+                        
+                    </td>
+                    <td class="subject-cell">Matematika
+                        
+                    </td>
+                    <td class="subject-cell">Pendidikan Pancasila
+                        
+                    </td>
+                    <td class="subject-cell">B. Jawa
+                        
+                    </td>
+                    <td class="subject-cell">Ekonomi
+                        
+                    </td>
+                </tr>
+                <tr>
+
+                    <td class="subject-cell">Pjok
+                        
+                    </td>
+                    <td class="subject-cell">PKWU
+                        
+                    </td>
+                    <td class="subject-cell">Geografi
+                        
+                    </td>
+                    <td class="subject-cell">Matematika
+                        
+                    </td>
+                    <td class="subject-cell">Informatika
+                        
+                    </td>
+                </tr>
+                <tr>
+
+                    <td>Istirahat I</td>
+                    <td>Istirahat I</td>
+                    <td>Istirahat I</td>
+                    <td>Istirahat I</td>
+                    <td>Istirahat I</td>
+                </tr>
+                <tr>
+                    <td class="subject-cell">Kimia
+                        
+                    </td>
+                    <td class="subject-cell">B. Inggris
+                        
+                    </td>
+                    <td class="subject-cell">Fisika
+                        
+                    </td>
+                    <td class="subject-cell">B. Indonesia
+                        
+                    </td>
+                    <td class="subject-cell">Informatika
+                        
+                    </td>
+                </tr>
+                <tr>
+                    <td>Istirahat II</td>
+                    <td>Istirahat II</td>
+                    <td>Istirahat II</td>
+                    <td>Istirahat II</td>
+                    <td>Istirahat II</td>
+                </tr>
+                <tr>
+                    <td class="subject-cell">Biologi
+                        
+                    </td>
+                    <td class="subject-cell">PAI
+                        
+                    </td>
+                    <td class="subject-cell">B. Indonesia
+                        
+                    </td>
+                    <td class="subject-cell">Sosiologi
+                       
+                    </td>
+                    <td class="subject-cell">Sejarah
+                        
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+        }
+
+        function highlightCurrentTime() {
+            const now = new Date();
+            const day = now.getDay();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const time = hour * 60 + minute;
+
+            const cells = document.querySelectorAll('td');
+            cells.forEach(cell => cell.classList.remove('current-time'));
+
+            if (day >= 1 && day <= 5) {
+                const timeSlots = [
+                    { start: 7 * 60, end: 7 * 60 + 45 },
+                    { start: 7 * 60 + 45, end: 8 * 60 + 30 },
+                    { start: 9 * 60 + 15, end: 9 * 60 + 30 },
+                    { start: 9 * 60 + 30, end: 10 * 60 + 15}
+                ];
+
+                timeSlots.forEach((slot, index) => {
+                    if (time >= slot.start && time <= slot.end) {
+                        const row = Math.floor(index / 5);
+                        const col = day;
+                        const cell = document.querySelector('table tr:nth-child(${row + 1}) td:nth-child(${col + 1})');
+                        if (cell) cell.classList.add('current-time');
+                    }
+                });
+            }
+        }
+
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', () => {
+                const loading = document.querySelector('.loading');
+                const schedule = document.querySelectorAll('.schedule-container');
+
+                loading.style.display = 'flex';
+                schedule.style.display = 'none';
+
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    schedule.style.display = 'block';
+                }, 1000);
+            });
+        });
+
+        highlightCurrentTime();
+        setInterval(highlightCurrentTime, 60000);
+    </script>
+</body>
+</html>
